@@ -67,6 +67,5 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:2.8.47'
     androidTestImplementation 'com.squareup.okhttp3:mockwebserver:3.6.0'
     androidTestAnnotationProcessor 'com.google.dagger:dagger-compiler:2.13'
-
     testAnnotationProcessor 'com.google.dagger:dagger-compiler:2.13'
 }

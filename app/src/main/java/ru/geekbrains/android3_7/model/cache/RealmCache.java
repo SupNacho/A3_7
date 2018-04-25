@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.reactivex.Observable;
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import ru.geekbrains.android3_7.model.entity.User;
 import ru.geekbrains.android3_7.model.entity.Repository;
 import ru.geekbrains.android3_7.model.entity.realm.RealmRepository;
@@ -12,10 +13,21 @@ import ru.geekbrains.android3_7.model.entity.realm.RealmUser;
 
 public class RealmCache implements ICache
 {
+    private Realm realm;
+    private RealmConfiguration configuration;
+    private boolean isTest;
+    public RealmCache(Realm realm, boolean isTest) {
+        this.isTest = isTest;
+        this.realm = realm;
+        this.configuration = realm.getConfiguration();
+    }
+
     @Override
     public void putUser(User user)
     {
-        Realm realm = Realm.getDefaultInstance();
+        if (!isTest) {
+        realm = Realm.getInstance(configuration);
+        }
         final RealmUser realmUser = realm.where(RealmUser.class).equalTo("login", user.getLogin()).findFirst();
         realm.executeTransaction(innerRealm ->
         {
@@ -30,14 +42,18 @@ public class RealmCache implements ICache
             }
         });
 
+        if (!isTest) {
         realm.close();
+        }
     }
 
     @Override
     public Observable<User> getUser(String username)
     {
         return  Observable.create(e -> {
-            Realm realm = Realm.getDefaultInstance();
+            if (!isTest) {
+            realm = Realm.getInstance(configuration);
+            }
             RealmUser realmUser = realm.where(RealmUser.class).equalTo("login", username).findFirst();
             if(realmUser == null)
             {
@@ -54,7 +70,9 @@ public class RealmCache implements ICache
     @Override
     public void putUserRepos(User user, List<Repository> repositories)
     {
-        Realm realm = Realm.getDefaultInstance();
+        if (!isTest) {
+        realm = Realm.getInstance(configuration);
+        }
         RealmUser realmUser = realm.where(RealmUser.class).equalTo("login", user.getLogin()).findFirst();
         if(realmUser == null)
         {
@@ -78,7 +96,9 @@ public class RealmCache implements ICache
             }
 
         });
-        realm.close();
+        if (!isTest) {
+            realm.close();
+        }
     }
 
     @Override
@@ -86,7 +106,9 @@ public class RealmCache implements ICache
     {
         return Observable.create(e ->
         {
-            Realm realm = Realm.getDefaultInstance();
+            if (!isTest) {
+                Realm realm = Realm.getInstance(configuration);
+            }
             RealmUser realmUser = realm.where(RealmUser.class).equalTo("login", user.getLogin()).findFirst();
             if (realmUser == null)
             {
